@@ -15,9 +15,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh; /* Mindesthöhe des Viewports */
             margin: 0;
-            padding: 0;
         }
         .container {
             max-width: 600px;
@@ -139,6 +138,17 @@
         window.onload = function() {
             calculate();
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const kaufpreisInput = document.getElementById('kaufpreis');
+            const mieteInput = document.getElementById('miete');
+
+            kaufpreisInput.addEventListener('input', function() {
+                if (kaufpreisInput.value.length >= 2) {
+                    mieteInput.focus();
+                }
+            });
+        });
     </script>
 </head>
 <body>
@@ -152,11 +162,11 @@
 
         <div class="mb-3">
             <label for="kaufpreis" class="form-label">Kaufpreis (in Mio.):</label>
-            <input type="number" class="form-control" id="kaufpreis" step="0.01" oninput="calculate()">
+            <input type="number" class="form-control" id="kaufpreis" step="0.01">
         </div>
         <div class="mb-3">
             <label for="miete" class="form-label">Schätzwert Miete / Mt. (in Tausend):</label>
-            <input type="number" class="form-control" id="miete" step="0.01" oninput="calculate()">
+            <input type="number" class="form-control" id="miete" step="0.01">
             <small id="jahresmiete" class="form-text text-muted">Jahresmiete: </small>
         </div>
         <div class="mb-3">
