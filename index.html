@@ -84,11 +84,15 @@
     </style>
     <script>
         function parseNumber(value) {
-            return parseFloat(value.replace(',', '.')) || 0;
+            return parseFloat(value.replace(/'/g, '').replace(',', '.')) || 0;
         }
 
         function formatNumber(num) {
-            return 'CHF ' + num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + ' / Jahr';
+            return 'CHF ' + Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'") + ' / Jahr';
+        }
+
+        function formatNumberSimple(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'");
         }
 
         function calculate() {
@@ -99,7 +103,7 @@
             var verwaltungskosten = parseNumber(document.getElementById('verwaltungskosten').value);
 
             var fremdmittel = kaufpreis - eigenmittel;
-            document.getElementById('fremdmittel').value = fremdmittel ? fremdmittel.toFixed(2) : '';
+            document.getElementById('fremdmittel').value = fremdmittel ? formatNumberSimple(fremdmittel) : '';
 
             var jahresmiete = miete * 1000 * 12;
             var betriebsVerwaltungskosten = jahresmiete * (verwaltungskosten / 100);
@@ -108,19 +112,19 @@
             var nettoRendite = (nettoertrag / (kaufpreis * 1000000)) * 100;
 
             var nettoRenditeElement = document.getElementById('nettoRendite');
-            nettoRenditeElement.innerText = isFinite(nettoRendite) ? nettoRendite.toFixed(2) + ' %' : '';
+            nettoRenditeElement.innerText = isFinite(nettoRendite) ? Math.round(nettoRendite).toString().replace('.', ',') + ' %' : '';
 
             var zinskostenElement = document.getElementById('zinskosten');
-            zinskostenElement.innerText = isFinite(zinskosten) ? formatNumber(Math.round(zinskosten)) : '';
+            zinskostenElement.innerText = isFinite(zinskosten) ? formatNumber(zinskosten) : '';
 
             var mieteElement = document.getElementById('jahresmiete');
-            mieteElement.innerText = isFinite(jahresmiete) ? formatNumber(Math.round(jahresmiete)) : '';
+            mieteElement.innerText = isFinite(jahresmiete) ? formatNumber(jahresmiete) : '';
 
             var verwaltungskostenElement = document.getElementById('betriebskosten');
-            verwaltungskostenElement.innerText = isFinite(betriebsVerwaltungskosten) ? formatNumber(Math.round(betriebsVerwaltungskosten)) : '';
+            verwaltungskostenElement.innerText = isFinite(betriebsVerwaltungskosten) ? formatNumber(betriebsVerwaltungskosten) : '';
 
             var nettoertragElement = document.getElementById('nettoertrag');
-            nettoertragElement.innerText = isFinite(nettoertrag) ? formatNumber(Math.round(nettoertrag)) : '';
+            nettoertragElement.innerText = isFinite(nettoertrag) ? formatNumber(nettoertrag) : '';
 
             if (nettoRendite < 1) {
                 nettoRenditeElement.style.color = 'red';
@@ -140,14 +144,12 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            const kaufpreisInput = document.getElementById('kaufpreis');
-            const mieteInput = document.getElementById('miete');
-
-            kaufpreisInput.addEventListener('input', function() {
-                if (kaufpreisInput.value.length >= 2) {
-                    mieteInput.focus();
-                }
-            });
+            // Call calculate function whenever input changes for all fields
+            document.getElementById('kaufpreis').addEventListener('input', calculate);
+            document.getElementById('miete').addEventListener('input', calculate);
+            document.getElementById('eigenmittel').addEventListener('input', calculate);
+            document.getElementById('hypothekarzins').addEventListener('input', calculate);
+            document.getElementById('verwaltungskosten').addEventListener('input', calculate);
         });
     </script>
 </head>
@@ -171,20 +173,20 @@
         </div>
         <div class="mb-3">
             <label for="eigenmittel" class="form-label">Eigenmittel (in Mio.):</label>
-            <input type="number" class="form-control" id="eigenmittel" step="0.01" value="1" oninput="calculate()">
+            <input type="number" class="form-control" id="eigenmittel" step="0.01" value="1">
         </div>
         <div class="mb-3">
             <label for="fremdmittel" class="form-label">Fremdmittel (in Mio.):</label>
-            <input type="number" class="form-control" id="fremdmittel" step="0.01" readonly>
+            <input type="text" class="form-control" id="fremdmittel" readonly>
         </div>
         <div class="mb-3">
             <label for="hypothekarzins" class="form-label">Hypothekarzins (in %):</label>
-            <input type="number" class="form-control" id="hypothekarzins" step="0.01" value="2.5" oninput="calculate()">
+            <input type="number" class="form-control" id="hypothekarzins" step="0.01" value="2.5">
             <small id="zinskosten" class="form-text text-muted">Zinskosten: </small>
         </div>
         <div class="mb-3">
             <label for="verwaltungskosten" class="form-label">Verwaltungs & Betriebskosten (in %):</label>
-            <input type="number" class="form-control" id="verwaltungskosten" step="0.01" value="20" oninput="calculate()">
+            <input type="number" class="form-control" id="verwaltungskosten" step="0.01" value="20">
             <small id="betriebskosten" class="form-text text-muted">Betriebskosten: </small>
         </div>
         <div class="footer">
