@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rendite Schätzer</title>
+    <title>Schnellrechner</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -88,11 +88,11 @@
         }
 
         function formatNumber(num) {
-            return 'CHF ' + Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'") + ' / Jahr';
+            return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'");
         }
 
-        function formatNumberSimple(num) {
-            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+        function formatCurrency(num) {
+            return 'CHF ' + formatNumber(num) + ' / Jahr';
         }
 
         function calculate() {
@@ -103,7 +103,7 @@
             var verwaltungskosten = parseNumber(document.getElementById('verwaltungskosten').value);
 
             var fremdmittel = kaufpreis - eigenmittel;
-            document.getElementById('fremdmittel').value = fremdmittel ? formatNumberSimple(fremdmittel) : '';
+            document.getElementById('fremdmittel').value = fremdmittel ? formatNumber(fremdmittel) : '';
 
             var jahresmiete = miete * 1000 * 12;
             var betriebsVerwaltungskosten = jahresmiete * (verwaltungskosten / 100);
@@ -115,16 +115,16 @@
             nettoRenditeElement.innerText = isFinite(nettoRendite) ? Math.round(nettoRendite).toString().replace('.', ',') + ' %' : '';
 
             var zinskostenElement = document.getElementById('zinskosten');
-            zinskostenElement.innerText = isFinite(zinskosten) ? formatNumber(zinskosten) : '';
+            zinskostenElement.innerText = isFinite(zinskosten) ? formatCurrency(zinskosten) : '';
 
             var mieteElement = document.getElementById('jahresmiete');
-            mieteElement.innerText = isFinite(jahresmiete) ? formatNumber(jahresmiete) : '';
+            mieteElement.innerText = isFinite(jahresmiete) ? formatCurrency(jahresmiete) : '';
 
             var verwaltungskostenElement = document.getElementById('betriebskosten');
-            verwaltungskostenElement.innerText = isFinite(betriebsVerwaltungskosten) ? formatNumber(betriebsVerwaltungskosten) : '';
+            verwaltungskostenElement.innerText = isFinite(betriebsVerwaltungskosten) ? formatCurrency(betriebsVerwaltungskosten) : '';
 
             var nettoertragElement = document.getElementById('nettoertrag');
-            nettoertragElement.innerText = isFinite(nettoertrag) ? formatNumber(nettoertrag) : '';
+            nettoertragElement.innerText = isFinite(nettoertrag) ? formatCurrency(nettoertrag) : '';
 
             if (nettoRendite < 1) {
                 nettoRenditeElement.style.color = 'red';
@@ -167,7 +167,7 @@
             <input type="number" class="form-control" id="kaufpreis" step="0.01">
         </div>
         <div class="mb-3">
-            <label for="miete" class="form-label">Schätzwert Miete / Mt. (in Tsd):</label>
+            <label for="miete" class="form-label">Schätzwert Miete / Mt. (in Tausend):</label>
             <input type="number" class="form-control" id="miete" step="0.01">
             <small id="jahresmiete" class="form-text text-muted">Jahresmiete: </small>
         </div>
