@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Schnellrechner</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
@@ -11,13 +11,9 @@
             font-family: 'Poppins', Arial, sans-serif;
             background-color: #f0f2f5;
             color: #333;
-            overflow-x: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            overflow-x: hidden; /* Verhindert horizontales Scrollen */
             margin: 0;
-            padding-top: 20px; /* Platz für den oberen Teil auf mobilen Geräten */
+            padding-top: 20px; /* Platz für das Darkmode-Icon */
         }
         .container {
             max-width: 600px;
@@ -44,11 +40,11 @@
             min-width: 100px;
         }
         input[readonly] {
-            background-color: #f1f3f5;
+            background-color: #f1f3f5; /* Hellerer Hintergrund für Fremdmittel */
             opacity: 1;
         }
         input {
-            background-color: #fff;
+            background-color: #fff; /* Hintergrundfarbe für alle Eingabefelder */
         }
         .footer {
             text-align: center;
@@ -57,10 +53,10 @@
             color: #6c757d;
         }
         .form-text {
-            margin-left: 10px;
+            margin-left: 10px; /* Einrücken der kleinen CHF-Beträge */
         }
         .nettoRendite.orange {
-            color: #ff8c00;
+            color: #ff8c00; /* Dunkleres Orange für bessere Lesbarkeit */
         }
         .dark-mode {
             background-color: #333;
@@ -75,11 +71,12 @@
         }
         .dark-mode-icon {
             cursor: pointer;
-            font-size: 1em;
-            position: fixed;
-            bottom: 10px; /* Verschiebt das Icon nach unten */
+            font-size: 1em; /* Kleineres Icon */
+            position: fixed; /* Fixiert das Icon */
+            top: 10px;
             right: 10px;
             color: #6c757d;
+            filter: grayscale(100%); /* Schwarz-Weiß */
         }
     </style>
     <script>
@@ -125,7 +122,7 @@
             if (nettoRendite < 1) {
                 nettoRenditeElement.style.color = 'red';
             } else if (nettoRendite < 2) {
-                nettoRenditeElement.style.color = '#ff8c00';
+                nettoRenditeElement.style.color = '#ff8c00'; /* Dunkleres Orange */
             } else {
                 nettoRenditeElement.style.color = 'green';
             }
@@ -142,7 +139,7 @@
 </head>
 <body>
     <div class="dark-mode-icon" onclick="toggleDarkMode()">
-        &#x2600;
+        &#x2600; <!-- Sonnen-Icon -->
     </div>
     <div class="container">
         <h1 class="text-center mb-4">Rendite Schätzer</h1>
@@ -178,4 +175,8 @@
         </div>
         <div class="footer">
             © Ein Service von Matthias Mattenberger. <br> Alle Angaben ohne Gewähr.
-       
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
