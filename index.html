@@ -6,6 +6,7 @@
     <title>Rendite Schätzer</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: 'Poppins', Arial, sans-serif;
@@ -51,7 +52,7 @@
         }
         .footer {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 10px;
             font-size: 0.9em;
             color: #6c757d;
         }
@@ -81,20 +82,35 @@
             color: #6c757d;
             filter: grayscale(100%); /* Schwarz-Weiß */
         }
+        .chart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        canvas {
+            max-width: 100%;
+            height: auto;
+        }
     </style>
     <script>
+        // Zahlen parsieren, Tausendertrennzeichen und Dezimaltrennzeichen behandeln
         function parseNumber(value) {
             return parseFloat(value.replace(/'/g, '').replace(',', '.')) || 0;
         }
 
+        // Zahlen formatieren, Tausendertrennzeichen hinzufügen
         function formatNumber(num) {
             return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'");
         }
 
+        // Währungsformatierung
         function formatCurrency(num) {
             return 'CHF ' + formatNumber(num) + ' / Jahr';
         }
 
+        // Berechnungslogik
         function calculate() {
             var kaufpreis = parseNumber(document.getElementById('kaufpreis').value);
             var miete = parseNumber(document.getElementById('miete').value);
@@ -133,18 +149,71 @@
             } else {
                 nettoRenditeElement.style.color = 'green';
             }
+
+            // Diagramm aktualisieren
+            updateChart(jahresmiete, betriebsVerwaltungskosten, zinskosten, nettoertrag);
         }
 
+        // Dunkelmodus umschalten
         function toggleDarkMode() {
             document.body.classList.toggle('dark-mode');
         }
 
+        // Chart.js Diagramm erstellen und aktualisieren
+        let myChart;
+
+        function createChart() {
+            const ctx = document.getElementById('moneyFlowChart').getContext('2d');
+            myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Mietertrag', 'Betriebskosten', 'Zinskosten', 'Nettoertrag'],
+                    datasets: [{
+                        data: [0, 0, 0, 0],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.2)', // Mietertrag
+                            'rgba(255, 99, 132, 0.2)', // Betriebskosten
+                            'rgba(255, 99, 132, 0.2)', // Zinskosten
+                            'rgba(75, 192, 192, 0.2)'  // Nettoertrag
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)', // Mietertrag
+                            'rgba(255, 99, 132, 1)', // Betriebskosten
+                            'rgba(255, 99, 132, 1)', // Zinskosten
+                            'rgba(75, 192, 192, 1)'  // Nettoertrag
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateChart(jahresmiete, betriebsVerwaltungskosten, zinskosten, nettoertrag) {
+            myChart.data.datasets[0].data = [jahresmiete, betriebsVerwaltungskosten, zinskosten, nettoertrag];
+            myChart.update();
+        }
+
+        // Bei Seitenladezeit Berechnung ausführen
         window.onload = function() {
+            createChart();
             calculate();
         }
 
+        // Eventlistener hinzufügen
         document.addEventListener('DOMContentLoaded', function() {
-            // Call calculate function whenever input changes for all fields
+            // Berechnung bei Änderung der Eingaben ausführen
             document.getElementById('kaufpreis').addEventListener('input', calculate);
             document.getElementById('miete').addEventListener('input', calculate);
             document.getElementById('eigenmittel').addEventListener('input', calculate);
@@ -169,7 +238,7 @@
         <div class="mb-3">
             <label for="miete" class="form-label">Schätzwert Miete / Mt. (in Tsd):</label>
             <input type="number" class="form-control" id="miete" step="0.01">
-            <small id="jahresmiete" class="form-text text-muted">Jahresmiete: </small>
+            <small id="jahresmiete" class="form-text text-muted">Mietertrag: </small>
         </div>
         <div class="mb-3">
             <label for="eigenmittel" class="form-label">Eigenmittel (in Mio.):</label>
@@ -188,6 +257,10 @@
             <label for="verwaltungskosten" class="form-label">Verwaltungs & Betriebskosten (in %):</label>
             <input type="number" class="form-control" id="verwaltungskosten" step="0.01" value="20">
             <small id="betriebskosten" class="form-text text-muted">Betriebskosten: </small>
+        </div>
+        <!-- Chart Container -->
+        <div class="chart-container">
+            <canvas id="moneyFlowChart"></canvas>
         </div>
         <div class="footer">
             © Ein Service von Matthias Mattenberger. <br> Alle Angaben ohne Gewähr.
