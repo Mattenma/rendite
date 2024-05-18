@@ -12,11 +12,11 @@
             font-family: 'Poppins', Arial, sans-serif;
             background-color: #f0f2f5;
             color: #333;
-            overflow-x: hidden; /* Verhindert horizontales Scrollen */
+            overflow-x: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh; /* Mindesthöhe des Viewports */
+            min-height: 100vh;
             margin: 0;
         }
         .container {
@@ -44,11 +44,11 @@
             min-width: 100px;
         }
         input[readonly] {
-            background-color: #f1f3f5; /* Hellerer Hintergrund für Fremdmittel */
+            background-color: #f1f3f5;
             opacity: 1;
         }
         input {
-            background-color: #fff; /* Hintergrundfarbe für alle Eingabefelder */
+            background-color: #fff;
         }
         .footer {
             text-align: center;
@@ -57,10 +57,10 @@
             color: #6c757d;
         }
         .form-text {
-            margin-left: 10px; /* Einrücken der kleinen CHF-Beträge */
+            margin-left: 10px;
         }
         .nettoRendite.orange {
-            color: #ff8c00; /* Dunkleres Orange für bessere Lesbarkeit */
+            color: #ff8c00;
         }
         .dark-mode {
             background-color: #333;
@@ -75,12 +75,12 @@
         }
         .dark-mode-icon {
             cursor: pointer;
-            font-size: 1em; /* Kleineres Icon */
-            position: fixed; /* Fixiert das Icon */
-            bottom: 10px; /* Position unten */
-            left: 10px; /* Position links */
+            font-size: 1em;
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
             color: #6c757d;
-            filter: grayscale(100%); /* Schwarz-Weiß */
+            filter: grayscale(100%);
         }
         .chart-container {
             display: flex;
@@ -95,22 +95,18 @@
         }
     </style>
     <script>
-        // Zahlen parsieren, Tausendertrennzeichen und Dezimaltrennzeichen behandeln
         function parseNumber(value) {
-            return parseFloat(value.replace(/'/g, '').replace(',', '.')) || 0;
+            return parseFloat(value.replace(/[\s']/g, '').replace(',', '.')) || 0;
         }
 
-        // Zahlen formatieren, Tausendertrennzeichen hinzufügen
         function formatNumber(num) {
-            return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'");
         }
 
-        // Währungsformatierung
         function formatCurrency(num) {
-            return 'CHF ' + formatNumber(num) + ' / Jahr';
+            return 'CHF ' + formatNumber(Math.round(num)) + ' / Jahr';
         }
 
-        // Berechnungslogik
         function calculate() {
             var kaufpreis = parseNumber(document.getElementById('kaufpreis').value);
             var miete = parseNumber(document.getElementById('miete').value);
@@ -119,7 +115,7 @@
             var verwaltungskosten = parseNumber(document.getElementById('verwaltungskosten').value);
 
             var fremdmittel = kaufpreis - eigenmittel;
-            document.getElementById('fremdmittel').value = fremdmittel ? formatNumber(fremdmittel) : '';
+            document.getElementById('fremdmittel').value = fremdmittel ? formatNumber(fremdmittel.toFixed(2)) : '';
 
             var jahresmiete = miete * 1000 * 12;
             var betriebsVerwaltungskosten = jahresmiete * (verwaltungskosten / 100);
@@ -127,39 +123,27 @@
             var nettoertrag = (jahresmiete * (1 - (verwaltungskosten / 100))) - zinskosten;
             var nettoRendite = (nettoertrag / (kaufpreis * 1000000)) * 100;
 
-            var nettoRenditeElement = document.getElementById('nettoRendite');
-            nettoRenditeElement.innerText = isFinite(nettoRendite) ? Math.round(nettoRendite).toString().replace('.', ',') + ' %' : '';
-
-            var zinskostenElement = document.getElementById('zinskosten');
-            zinskostenElement.innerText = isFinite(zinskosten) ? formatCurrency(zinskosten) : '';
-
-            var mieteElement = document.getElementById('jahresmiete');
-            mieteElement.innerText = isFinite(jahresmiete) ? formatCurrency(jahresmiete) : '';
-
-            var verwaltungskostenElement = document.getElementById('betriebskosten');
-            verwaltungskostenElement.innerText = isFinite(betriebsVerwaltungskosten) ? formatCurrency(betriebsVerwaltungskosten) : '';
-
-            var nettoertragElement = document.getElementById('nettoertrag');
-            nettoertragElement.innerText = isFinite(nettoertrag) ? formatCurrency(nettoertrag) : '';
+            document.getElementById('nettoRendite').innerText = isFinite(nettoRendite) ? nettoRendite.toFixed(2).replace('.', ',') + ' %' : '';
+            document.getElementById('zinskosten').innerText = isFinite(zinskosten) ? formatCurrency(zinskosten) : '';
+            document.getElementById('jahresmiete').innerText = isFinite(jahresmiete) ? formatCurrency(jahresmiete) : '';
+            document.getElementById('betriebskosten').innerText = isFinite(betriebsVerwaltungskosten) ? formatCurrency(betriebsVerwaltungskosten) : '';
+            document.getElementById('nettoertrag').innerText = isFinite(nettoertrag) ? formatCurrency(nettoertrag) : '';
 
             if (nettoRendite < 1) {
-                nettoRenditeElement.style.color = 'red';
+                document.getElementById('nettoRendite').style.color = 'red';
             } else if (nettoRendite < 2) {
-                nettoRenditeElement.style.color = '#ff8c00'; /* Dunkleres Orange */
+                document.getElementById('nettoRendite').style.color = '#ff8c00';
             } else {
-                nettoRenditeElement.style.color = 'green';
+                document.getElementById('nettoRendite').style.color = 'green';
             }
 
-            // Diagramm aktualisieren
             updateChart(jahresmiete, betriebsVerwaltungskosten, zinskosten, nettoertrag);
         }
 
-        // Dunkelmodus umschalten
         function toggleDarkMode() {
             document.body.classList.toggle('dark-mode');
         }
 
-        // Chart.js Diagramm erstellen und aktualisieren
         let myChart;
 
         function createChart() {
@@ -171,16 +155,16 @@
                     datasets: [{
                         data: [0, 0, 0, 0],
                         backgroundColor: [
-                            'rgba(75, 192, 192, 0.2)', // Mietertrag
-                            'rgba(255, 99, 132, 0.2)', // Betriebskosten
-                            'rgba(255, 99, 132, 0.2)', // Zinskosten
-                            'rgba(75, 192, 192, 0.2)'  // Nettoertrag
+                            'rgba(75, 192, 192, 0.2)', 
+                            'rgba(255, 99, 132, 0.2)', 
+                            'rgba(255, 99, 132, 0.2)', 
+                            'rgba(75, 192, 192, 0.2)' 
                         ],
                         borderColor: [
-                            'rgba(75, 192, 192, 1)', // Mietertrag
-                            'rgba(255, 99, 132, 1)', // Betriebskosten
-                            'rgba(255, 99, 132, 1)', // Zinskosten
-                            'rgba(75, 192, 192, 1)'  // Nettoertrag
+                            'rgba(75, 192, 192, 1)', 
+                            'rgba(255, 99, 132, 1)', 
+                            'rgba(255, 99, 132, 1)', 
+                            'rgba(75, 192, 192, 1)' 
                         ],
                         borderWidth: 1
                     }]
@@ -205,15 +189,12 @@
             myChart.update();
         }
 
-        // Bei Seitenladezeit Berechnung ausführen
         window.onload = function() {
             createChart();
             calculate();
         }
 
-        // Eventlistener hinzufügen
         document.addEventListener('DOMContentLoaded', function() {
-            // Berechnung bei Änderung der Eingaben ausführen
             document.getElementById('kaufpreis').addEventListener('input', calculate);
             document.getElementById('miete').addEventListener('input', calculate);
             document.getElementById('eigenmittel').addEventListener('input', calculate);
@@ -224,7 +205,7 @@
 </head>
 <body>
     <div class="dark-mode-icon" onclick="toggleDarkMode()">
-        &#x2600; <!-- Sonnen-Icon -->
+        &#x2600;
     </div>
     <div class="container">
         <h1 class="text-center mb-4">Rendite Schätzer</h1>
@@ -233,16 +214,16 @@
 
         <div class="mb-3">
             <label for="kaufpreis" class="form-label">Kaufpreis (in Mio.):</label>
-            <input type="number" class="form-control" id="kaufpreis" step="0.01">
+            <input type="number" class="form-control" id="kaufpreis" step="0.1">
         </div>
         <div class="mb-3">
             <label for="miete" class="form-label">Schätzwert Miete / Mt. (in Tsd):</label>
-            <input type="number" class="form-control" id="miete" step="0.01">
+            <input type="number" class="form-control" id="miete" step="0.1">
             <small id="jahresmiete" class="form-text text-muted">Mietertrag: </small>
         </div>
         <div class="mb-3">
             <label for="eigenmittel" class="form-label">Eigenmittel (in Mio.):</label>
-            <input type="number" class="form-control" id="eigenmittel" step="0.01" value="1">
+            <input type="number" class="form-control" id="eigenmittel" step="0.1" value="1">
         </div>
         <div class="mb-3">
             <label for="fremdmittel" class="form-label">Fremdmittel (in Mio.):</label>
@@ -250,15 +231,14 @@
         </div>
         <div class="mb-3">
             <label for="hypothekarzins" class="form-label">Hypothekarzins (in %):</label>
-            <input type="number" class="form-control" id="hypothekarzins" step="0.01" value="2.5">
+            <input type="number" class="form-control" id="hypothekarzins" step="0.1" value="2.5">
             <small id="zinskosten" class="form-text text-muted">Zinskosten: </small>
         </div>
         <div class="mb-3">
             <label for="verwaltungskosten" class="form-label">Verwaltungs & Betriebskosten (in %):</label>
-            <input type="number" class="form-control" id="verwaltungskosten" step="0.01" value="20">
+            <input type="number" class="form-control" id="verwaltungskosten" step="0.1" value="20">
             <small id="betriebskosten" class="form-text text-muted">Betriebskosten: </small>
         </div>
-        <!-- Chart Container -->
         <div class="chart-container">
             <canvas id="moneyFlowChart"></canvas>
         </div>
