@@ -95,120 +95,121 @@
         }
     </style>
     <script>
-        function parseNumber(value) {
-            return parseFloat(value.replace(/[\s']/g, '').replace(',', '.')) || 0;
-        }
+function parseNumber(value) {
+    return parseFloat(value.replace(/[\s']/g, '').replace(',', '.')) || 0;
+}
 
-        function formatNumber(num) {
-            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'");
-        }
+function formatNumber(num) {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+}
 
-        function formatCurrency(num) {
-            return 'CHF ' + formatNumber(Math.round(num)) + ' / Jahr';
-        }
+function formatCurrency(num) {
+    return 'CHF ' + formatNumber(Math.round(num)) + ' / Jahr';
+}
 
-        function calculate() {
-            var kaufpreis = parseNumber(document.getElementById('kaufpreis').value);
-            var miete = parseNumber(document.getElementById('miete').value);
-            var eigenmittel = parseNumber(document.getElementById('eigenmittel').value);
-            var hypothekarzins = parseNumber(document.getElementById('hypothekarzins').value);
-            var verwaltungskosten = parseNumber(document.getElementById('verwaltungskosten').value);
+function calculate() {
+    var kaufpreis = parseNumber(document.getElementById('kaufpreis').value);
+    var miete = parseNumber(document.getElementById('miete').value);
+    var eigenmittel = parseNumber(document.getElementById('eigenmittel').value);
+    var hypothekarzins = parseNumber(document.getElementById('hypothekarzins').value);
+    var verwaltungskosten = parseNumber(document.getElementById('verwaltungskosten').value);
 
-            var fremdmittel = kaufpreis - eigenmittel;
-            document.getElementById('fremdmittel').value = fremdmittel ? formatNumber(fremdmittel.toFixed(2)) : '';
+    var fremdmittel = kaufpreis - eigenmittel;
+    document.getElementById('fremdmittel').value = fremdmittel ? formatNumber(fremdmittel.toFixed(2)) : '';
 
-            var jahresmiete = miete * 1000 * 12;
-            var betriebsVerwaltungskosten = jahresmiete * (verwaltungskosten / 100);
-            var zinskosten = fremdmittel * 1000000 * (hypothekarzins / 100);
-            var nettoertrag = (jahresmiete * (1 - (verwaltungskosten / 100))) - zinskosten;
-            var nettoRendite = (nettoertrag / (kaufpreis * 1000000)) * 100;
+    var jahresmiete = miete * 1000 * 12;
+    var betriebsVerwaltungskosten = jahresmiete * (verwaltungskosten / 100);
+    var zinskosten = fremdmittel * 1000000 * (hypothekarzins / 100);
 
-            var amortisation = 0;
-            if (fremdmittel / kaufpreis > 0.65) {
-                amortisation = (fremdmittel - 0.65 * kaufpreis) * 1000000 / 15;
-            }
-            document.getElementById('amortisation').innerText = isFinite(amortisation) && amortisation > 0 ? formatCurrency(amortisation) : 'CHF 0 / Jahr';
+    var amortisation = 0;
+    if (fremdmittel / kaufpreis > 0.65) {
+        amortisation = (fremdmittel - 0.65 * kaufpreis) * 1000000 / 15;
+    }
+    document.getElementById('amortisation').innerText = isFinite(amortisation) && amortisation > 0 ? formatCurrency(amortisation) : 'CHF 0 / Jahr';
 
-            document.getElementById('nettoRendite').innerText = isFinite(nettoRendite) ? nettoRendite.toFixed(2).replace('.', ',') + ' %' : '';
-            document.getElementById('zinskosten').innerText = isFinite(zinskosten) ? formatCurrency(zinskosten) : '';
-            document.getElementById('jahresmiete').innerText = isFinite(jahresmiete) ? formatCurrency(jahresmiete) : '';
-            document.getElementById('betriebskosten').innerText = isFinite(betriebsVerwaltungskosten) ? formatCurrency(betriebsVerwaltungskosten) : '';
-            document.getElementById('nettoertrag').innerText = isFinite(nettoertrag) ? formatCurrency(nettoertrag) : '';
+    var nettoertrag = (jahresmiete * (1 - (verwaltungskosten / 100))) - zinskosten - amortisation;
+    var nettoRendite = (nettoertrag / (kaufpreis * 1000000)) * 100;
 
-            if (nettoRendite < 1) {
-                document.getElementById('nettoRendite').style.color = 'red';
-            } else if (nettoRendite < 2) {
-                document.getElementById('nettoRendite').style.color = '#ff8c00';
-            } else {
-                document.getElementById('nettoRendite').style.color = 'green';
-            }
+    document.getElementById('nettoRendite').innerText = isFinite(nettoRendite) ? nettoRendite.toFixed(2).replace('.', ',') + ' %' : '';
+    document.getElementById('zinskosten').innerText = isFinite(zinskosten) ? formatCurrency(zinskosten) : '';
+    document.getElementById('jahresmiete').innerText = isFinite(jahresmiete) ? formatCurrency(jahresmiete) : '';
+    document.getElementById('betriebskosten').innerText = isFinite(betriebsVerwaltungskosten) ? formatCurrency(betriebsVerwaltungskosten) : '';
+    document.getElementById('nettoertrag').innerText = isFinite(nettoertrag) ? formatCurrency(nettoertrag) : '';
 
-            updateChart(jahresmiete, betriebsVerwaltungskosten, zinskosten, amortisation, nettoertrag);
-        }
+    if (nettoRendite < 1) {
+        document.getElementById('nettoRendite').style.color = 'red';
+    } else if (nettoRendite < 2) {
+        document.getElementById('nettoRendite').style.color = '#ff8c00';
+    } else {
+        document.getElementById('nettoRendite').style.color = 'green';
+    }
 
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-        }
+    updateChart(jahresmiete, betriebsVerwaltungskosten, zinskosten, amortisation, nettoertrag);
+}
 
-        let myChart;
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+}
 
-        function createChart() {
-            const ctx = document.getElementById('moneyFlowChart').getContext('2d');
-            myChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Mietertrag', 'Betriebskosten', 'Zinskosten', 'Amortisation', 'Nettoertrag'],
-                    datasets: [{
-                        data: [0, 0, 0, 0, 0],
-                        backgroundColor: [
-                            'rgba(75, 192, 192, 0.2)', 
-                            'rgba(255, 99, 132, 0.2)', 
-                            'rgba(255, 99, 132, 0.2)', 
-                            'rgba(255, 99, 132, 0.2)', 
-                            'rgba(75, 192, 192, 0.2)'
-                        ],
-                        borderColor: [
-                            'rgba(75, 192, 192, 1)', 
-                            'rgba(255, 99, 132, 1)', 
-                            'rgba(255, 99, 132, 1)', 
-                            'rgba(255, 99, 132, 1)', 
-                            'rgba(75, 192, 192, 1)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
+let myChart;
+
+function createChart() {
+    const ctx = document.getElementById('moneyFlowChart').getContext('2d');
+    myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Mietertrag', 'Betriebskosten', 'Zinskosten', 'Amortisation', 'Nettoertrag'],
+            datasets: [{
+                data: [0, 0, 0, 0, 0],
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.2)', 
+                    'rgba(255, 99, 132, 0.2)', 
+                    'rgba(255, 99, 132, 0.2)', 
+                    'rgba(255, 99, 132, 0.2)',  // Rot für Amortisation
+                    'rgba(75, 192, 192, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(75, 192, 192, 1)', 
+                    'rgba(255, 99, 132, 1)', 
+                    'rgba(255, 99, 132, 1)', 
+                    'rgba(255, 99, 132, 1)',  // Rot für Amortisation
+                    'rgba(75, 192, 192, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    display: false
                 }
-            });
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
         }
+    });
+}
 
-        function updateChart(jahresmiete, betriebsVerwaltungskosten, zinskosten, amortisation, nettoertrag) {
-            myChart.data.datasets[0].data = [jahresmiete, betriebsVerwaltungskosten, zinskosten, amortisation, nettoertrag];
-            myChart.update();
-        }
+function updateChart(jahresmiete, betriebsVerwaltungskosten, zinskosten, amortisation, nettoertrag) {
+    myChart.data.datasets[0].data = [jahresmiete, betriebsVerwaltungskosten, zinskosten, amortisation, nettoertrag];
+    myChart.update();
+}
 
-        window.onload = function() {
-            createChart();
-            calculate();
-        }
+window.onload = function() {
+    createChart();
+    calculate();
+}
 
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('kaufpreis').addEventListener('input', calculate);
-            document.getElementById('miete').addEventListener('input', calculate);
-            document.getElementById('eigenmittel').addEventListener('input', calculate);
-            document.getElementById('hypothekarzins').addEventListener('input', calculate);
-            document.getElementById('verwaltungskosten').addEventListener('input', calculate);
-        });
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('kaufpreis').addEventListener('input', calculate);
+    document.getElementById('miete').addEventListener('input', calculate);
+    document.getElementById('eigenmittel').addEventListener('input', calculate);
+    document.getElementById('hypothekarzins').addEventListener('input', calculate);
+    document.getElementById('verwaltungskosten').addEventListener('input', calculate);
+});
     </script>
 </head>
 <body>
